@@ -1,4 +1,9 @@
+import os
 env = Environment()
 env.Program(target='pointcloud', source=['pointcloud.cpp'])
-env.ParseConfig( 'pkg-config opencv --libs --cflags' )
-env.Append(CCFLAGS = ['-g','-Wall'])
+env["ENV"]["PKG_CONFIG_PATH"] = os.environ.get("PKG_CONFIG_PATH")
+#env.ParseConfig( 'pkg-config opencv pcl_common-1.7 pcl_io-1.7 pcl_visualization-1.7 --libs --cflags' )
+#env.Append(CCFLAGS = ['-g','-Wall', '-std=c++11'])
+# OpenNI doesn't have a pkg-config file
+env.ParseConfig( 'pkg-config opencv pcl_common-1.7 --libs --cflags' )
+env.Append(CCFLAGS = ['-g','-Wall', '-std=c++11', '-lOpenNI', '-lpcl_io-1.7', '-lpcl_visualization-1.7'])

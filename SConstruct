@@ -25,12 +25,12 @@ SConscript(
     duplicate=0,
     exports={'MODE':'debug'})
 
-#SConscript(
-#    'src/pointcloud/SConscript',
-#    variant_dir='build/debug',
-#    src_dir='src',
-#    duplicate=0,
-#    exports={'MODE':'debug'})
+SConscript(
+    'src/pointcloud/SConscript',
+    variant_dir='build/debug',
+    src_dir='src',
+    duplicate=0,
+    exports={'MODE':'debug'})
 
 SConscript(
     'src/tuner/SConscript',
