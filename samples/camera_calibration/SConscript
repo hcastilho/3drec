@@ -1,0 +1,26 @@
+env = Environment()
+env.Program(target='camera_calibration', source=['camera_calibration.cpp'])
+
+env.ParseConfig( 'pkg-config opencv --libs --cflags' )
+env.Append(CCFLAGS = ['-g','-Wall'])
+
+Command("in_VID5.xml", File("in_VID5.xml").srcnode(), Copy("$TARGET", "$SOURCE"))
+#Execute(Copy("in_VID5.xml", "in_VID5.xml"))
+
+
+# Add flags from a config
+# env.ParseConfig( 'pkg-config --cflags glib-2.0' )
+#Add header search path
+#env.Append(CPPPATH = ['/usr/local/include/'])
+# Add compile-time flags
+#env.Append(CCFLAGS = ['-g','-O3'])
+# Add define
+# env.Append(CPPDEFINES=['BIG_ENDIAN'])
+# Add define with value (e.g. -DRELEASE_BUILD=1)
+# env.Append(CPPDEFINES={'RELEASE_BUILD' : '1'})
+# Add library search path
+# env.Append(LIBPATH = ['/usr/local/lib/'])
+# Add libraries to link against
+# env.Append(LIBS = ['SDL_image','GL'])
+# Link time flags
+# env.Append(LINKFLAGS = ['-Wl,--rpath,/usr/local/lib/'])

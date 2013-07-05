@@ -1,0 +1,9 @@
+env = Environment()
+env.Program(target='calibration', source=['calibration.cpp'])
+env.Program(target='grab', source=['grab.cpp'])
+env.Program(target='grab_single', source=['grab_single.cpp'])
+env.Program(target='matching_sgbm', source=['matching_sgbm.cpp'])
+env.Program(target='matching_bm', source=['matching_bm.cpp'])
+
+env.ParseConfig( 'pkg-config opencv --libs --cflags' )
+env.Append(CCFLAGS = ['-g','-Wall'])

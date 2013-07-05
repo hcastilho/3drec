@@ -1,0 +1,28 @@
+Here's the idea
+
+---------- Forwarded message ----------
+From: "Limor Schweitzer" <limor@robosavvy.com>
+Date: May 22, 2013 7:23 PM
+Subject: Re: Pi Camera - element14
+To: "Tiago Maurício [ RoboSavvy ]" <tiagom@robosavvy.com>, "Marco P. [ RoboSavvy ]" <marcop@robosavvy.com>, "Tiago Rato" <tiago@robosavvy.com>
+
+the idea is to use 2 cameras linked to 2 Rpi
+they will take pictures simultaneously (synchronized via serial or gpio or NTP) 
+they will look for SIFT interest points individually in each Rpi/camera and pass this compressed timestamped data upstream to the PC
+This will maximize the Rpi CPU power and will minimize the USB traffic overheads
+The PC will reconstruct the point cloud from the stereo-matched SIFT points
+
+If you know a student who knows this stuff and can quickly put something together - I will be happy to sponsor the effort.
+There's quite a bit of math SIFT, optical flow, camera calibration, stereo belief propagation, point cloud culling and surface matching etc. but there is tonnes of opensource software.
+
+If we can come up quickly with a stereo camera based on two Rpi, using  3D printed calibrated stereo camera - we put it on kickstarter and make our mark.
+
+
+On Wed, May 22, 2013 at 6:22 PM, Tiago Maurício [ RoboSavvy ] <tiagom@robosavvy.com> wrote:
+You can only plug 1 camera to the Pi unfortunately
+
+
+On Wed, May 22, 2013 at 6:13 PM, Limor Schweitzer <limor@robosavvy.com> wrote:
+http://www.element14.com/community/roadTests/1162?CMP=SOM-ROADT-RASPI-PICAMERA-ENROLL-FB
+
+Low latency capture... stereo vision.. 3d reconstruction ?

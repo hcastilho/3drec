@@ -1,0 +1,4 @@
+env = Environment()
+env.Program(target='pointcloud', source=['pointcloud.cpp'])
+env.ParseConfig( 'pkg-config opencv --libs --cflags' )
+env.Append(CCFLAGS = ['-g','-Wall'])

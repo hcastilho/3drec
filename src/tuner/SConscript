@@ -1,0 +1,4 @@
+env = Environment()
+env.Program(target='tuner', source=['mgtk.cpp'])
+env.ParseConfig( 'pkg-config opencv gtkmm-2.4 --libs --cflags' )
+env.Append(CCFLAGS = ['-g','-Wall'])

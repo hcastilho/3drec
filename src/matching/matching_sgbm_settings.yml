@@ -1,0 +1,66 @@
+%YAML:1.0
+intrinsicsFile: "intrinsics.yml"
+extrinsicsFile: "extrinsics.yml"
+
+#minDisparity: 1
+#numberOfDisparities: 16
+#SADWindowSize: 11
+#P1: 0
+#P2: 0
+#disp12MaxDiff: 0
+#preFilterCap: 0
+#uniquenessRatio: 0
+#speckleWindowSize: 0
+#speckleRange: 0
+#fullDP: true
+
+# From http://jayrambhia.com/blog/disparity-maps/
+#SADWindowSize: 5
+#numberOfDisparities: 192
+#preFilterCap: 4
+#minDisparity: -64
+#uniquenessRatio: 1
+#speckleWindowSize: 150
+#speckleRange: 2
+#disp12MaxDiff: 10
+#fullDP: false
+#P1: 600
+#P2: 2400
+
+# Test 2
+SADWindowSize: 5
+numberOfDisparities: 16
+preFilterCap: 4
+minDisparity: -64
+uniquenessRatio: 1
+speckleWindowSize: 100
+speckleRange: 8
+disp12MaxDiff: 10
+fullDP: false
+P1: 600
+P2: 2400
+# Test1
+#SADWindowSize: 5
+#numberOfDisparities: 16
+#preFilterCap: 4 #4
+#minDisparity: 0
+#uniquenessRatio: 1
+#speckleWindowSize: 50
+#speckleRange: 1
+#disp12MaxDiff: 10
+#fullDP: false
+#P1: 600
+#P2: 2400
+
+# From stereo_match
+#SADWindowSize: 3
+#numberOfDisparities: 80
+#preFilterCap: 63
+#minDisparity: 0
+#uniquenessRatio: 10
+#speckleWindowSize: 100
+#speckleRange: 32
+#disp12MaxDiff: 1
+#fullDP: false
+#P1: 600
+#P2: 2400
