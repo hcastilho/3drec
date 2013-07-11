@@ -58,61 +58,50 @@ void create_point_cloud() {
     Mat xyz;
     reprojectImageTo3D(disp, xyz, Q, true);
 
-    //Create point cloud and fill it
-    // TODO remove points that have no interest
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (
             new pcl::PointCloud<pcl::PointXYZRGB>);
-    double px, py, pz;
-    uchar pr, pg, pb;
     int i,j;
 
-    for (i = 0; i < img_rgb.rows; i++)
+    cout << "Start Mat->PCL" << endl;
+    for (i = 0; i < xyz.rows; i++)
     {
-        uchar* rgb_ptr = img_rgb.ptr<uchar>(i);
-        double* recons_ptr = xyz.ptr<double>(i);
-        for (j = 0; j < img_rgb.cols; j++)
+        for (j = 0; j < xyz.cols; j++)
         {
-            //Get 3D coordinates
-            px = recons_ptr[3*j];
-            py = recons_ptr[3*j+1];
-            pz = recons_ptr[3*j+2];
 
-            //Get RGB info
-            pb = rgb_ptr[3*j];
-            pg = rgb_ptr[3*j+1];
-            pr = rgb_ptr[3*j+2];
-
-            //Insert info into point cloud structure
+            // TODO remove points that have no interest
+            if (xyz.at<cv::Point3f>(i, j).z > 1000) continue;
             pcl::PointXYZRGB point;
-            point.x = px;
-            point.y = py;
-            point.z = pz;
-            uint32_t rgb = (static_cast<uint32_t>(pr) << 16 |
-                    static_cast<uint32_t>(pg) << 8 | static_cast<uint32_t>(pb));
-            point.rgb = *reinterpret_cast<float*>(&rgb);
+            point.x = xyz.at<cv::Point3f>(i, j).x;
+            point.y = xyz.at<cv::Point3f>(i, j).y;
+            point.z = xyz.at<cv::Point3f>(i, j).z;
+            // OpenCV is BGR
+            point.r = img_rgb.at<cv::Point3i>(i, j).z;
+            point.g = img_rgb.at<cv::Point3i>(i, j).y;
+            point.b = img_rgb.at<cv::Point3i>(i, j).x;
             point_cloud_ptr->points.push_back (point);
         }
     }
     point_cloud_ptr->width = (int) point_cloud_ptr->points.size();
     point_cloud_ptr->height = 1;
+    cout << "End Mat->PCL" << endl;
 
-    //// Show point cloud in visualizer
-    //cout << "Show point cloud" << endl;
-    //viewer_mutex.lock();
-    //pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(point_cloud_ptr);
-    //viewer->addPointCloud<pcl::PointXYZRGB> (point_cloud_ptr, rgb, "reconstruction");
-    //viewer_mutex.unlock();
+    // Show point cloud in visualizer
+    cout << "Show point cloud" << endl;
+    viewer_mutex.lock();
+    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(point_cloud_ptr);
+    viewer->addPointCloud<pcl::PointXYZRGB> (point_cloud_ptr, rgb, "reconstruction");
+    viewer_mutex.unlock();
 
     //cout << "Storing point cloud file" << endl;
     pcl::io::savePCDFileASCII ("test_pcd_ascii.pcd", *point_cloud_ptr);
     //pcl::io::savePCDFileBinary("test_pcd.pcd", *point_cloud_ptr);
 
-    FileStorage fs("disp.yml", CV_STORAGE_WRITE);
-    fs << "disp" << disp;
+    //FileStorage fs("disp.yml", CV_STORAGE_WRITE);
+    //fs << "disp" << disp;
     //FileStorage fs("disp8.yml", CV_STORAGE_WRITE);
     //fs << "disp8" << disp8;
-    fs.open("xyz.yml", CV_STORAGE_WRITE);
-    fs << "xyz" << xyz;
+    //fs.open("xyz.yml", CV_STORAGE_WRITE);
+    //fs << "xyz" << xyz;
     cout << "End create_point_cloud" << endl;
 }
 
@@ -122,7 +111,7 @@ void visualizer_update() {
         viewer_mutex.lock();
         viewer->spinOnce(100);
         viewer_mutex.unlock();
-        std::chrono::milliseconds dura( 1000 );
+        std::chrono::milliseconds dura( 10 );
         std::this_thread::sleep_for( dura );
     }
 }
@@ -246,8 +235,10 @@ int main(int argc, char* argv[])
     initUndistortRectifyMap(M2, D2, R2, P2, imageSize, CV_16SC2,
             m_map[1][0], m_map[1][1]);
 
-    viewer->setBackgroundColor (0, 0, 0);
+    //viewer->setBackgroundColor (0, 0, 0);
+    viewer->setBackgroundColor (255, 255, 255);
     viewer->addCoordinateSystem ( 1.0 );
+
     viewer->initCameraParameters ();
     viewer->spinOnce(100);
 
