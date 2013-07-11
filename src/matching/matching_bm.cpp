@@ -70,14 +70,17 @@ int main(int argc, char* argv[])
     //fs["Q"] >> Q;
 
     Rect roi1, roi2;
-    stereoRectify( M1, D1, M2, D2, imageSize, R, T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY, -1, imageSize, &roi1, &roi2 );
+    stereoRectify( M1, D1, M2, D2, imageSize, R, T, R1, R2, P1, P2, Q,
+            CALIB_ZERO_DISPARITY, -1, imageSize, &roi1, &roi2 );
     bm.state->roi1 = roi1;
     bm.state->roi2 = roi2;
 
     //Mat map11, map12, map21, map22;
     Mat map[2][2];
-    initUndistortRectifyMap(M1, D1, R1, P1, imageSize, CV_16SC2, map[0][0], map[0][1]);
-    initUndistortRectifyMap(M2, D2, R2, P2, imageSize, CV_16SC2, map[1][0], map[1][1]);
+    initUndistortRectifyMap(M1, D1, R1, P1, imageSize, CV_16SC2,
+            map[0][0], map[0][1]);
+    initUndistortRectifyMap(M2, D2, R2, P2, imageSize, CV_16SC2,
+            map[1][0], map[1][1]);
 
 
     //StereoBM bm;
@@ -114,7 +117,9 @@ int main(int argc, char* argv[])
             cvtColor(aux, view[k], CV_BGR2GRAY);
         }
         bm(view[0], view[1], disp);
-        disp.convertTo(disp8, CV_8U);
+        double minVal; double maxVal;
+        minMaxLoc(disp, &minVal, &maxVal );
+        disp.convertTo(disp8, CV_8U, 255/(maxVal - minVal));
         imshow("disparity", disp8);
 
         key = (char)waitKey(50);

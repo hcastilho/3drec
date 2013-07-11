@@ -63,7 +63,9 @@ void computeStereoBM ()
 
     Mat imageDepthDisplay;
     // Convert to CV_8U to display
-    data.imageDepth.convertTo(imageDepthDisplay, CV_8U);
+    double minVal; double maxVal;
+    minMaxLoc(data.imageDepth, &minVal, &maxVal );
+    data.imageDepth.convertTo(imageDepthDisplay, CV_8U, 255/(maxVal - minVal));
 
     // Repeat and merge to display in gtk
     Mat rgb;

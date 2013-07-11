@@ -113,7 +113,9 @@ int main(int argc, char* argv[])
             view[k] = aux;
         }
         sgbm(view[0], view[1], disp);
-        disp.convertTo(disp8, CV_8U);
+        double minVal; double maxVal;
+        minMaxLoc(disp, &minVal, &maxVal );
+        disp.convertTo(disp8, CV_8U, 255/(maxVal - minVal));
         imshow("disparity", disp8);
 
         key = (char)waitKey(50);
