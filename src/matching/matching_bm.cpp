@@ -18,10 +18,11 @@ int main(int argc, char* argv[])
 
     const char ESC_KEY = 27;
 
-    FileStorage fs("matching_bm_settings.yml", CV_STORAGE_READ);
-    string intrinsicsFile, extrinsicsFile;
-    fs["intrinsicsFile"] >> intrinsicsFile;
-    fs["extrinsicsFile"] >> extrinsicsFile;
+    const string intrinsics_file = argc > 1 ? argv[1] : "intrinsics.yml";
+    const string extrinsics_file = argc > 2 ? argv[2] : "extrinsics.yml";
+    const string bm_file = argc > 3 ? argv[3] : "bm_settings.yml";
+
+    FileStorage fs(bm_file, CV_STORAGE_READ);
 
     StereoBM bm;
     fs["preFilterCap"] >> bm.state->preFilterCap;
@@ -35,7 +36,7 @@ int main(int argc, char* argv[])
     fs["disp12MaxDiff"] >> bm.state->disp12MaxDiff;
 
 
-    fs.open(intrinsicsFile, CV_STORAGE_READ);
+    fs.open(intrinsics_file, CV_STORAGE_READ);
     if(!fs.isOpened())
     {
         cout << "Failed to open intrinsics file ";
@@ -52,7 +53,7 @@ int main(int argc, char* argv[])
     fs["imageSize"] >> imgsize;
     imageSize = Size(imgsize[0], imgsize[1]);
 
-    fs.open(extrinsicsFile, CV_STORAGE_READ);
+    fs.open(extrinsics_file, CV_STORAGE_READ);
     if(!fs.isOpened())
     {
         cout << "Failed to open extrinsics file ";

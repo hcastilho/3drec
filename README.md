@@ -5,6 +5,7 @@
 * opencv 2.3.4
 * gtkmm 2.24
 * pcl 1.7
+* openni latest
 
 # Structure #
 

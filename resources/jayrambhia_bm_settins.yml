@@ -1,0 +1,12 @@
+%YAML:1.0
+# From http://jayrambhia.com/blog/disparity-maps/
+SADWindowSize: 9
+numberOfDisparities: 112
+preFilterSize: 5
+preFilterCap: 61
+minDisparity: -39
+textureThreshold: 507
+uniquenessRatio: 0
+speckleWindowSize: 0
+speckleRange: 8
+disp12MaxDiff: 1

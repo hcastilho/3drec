@@ -5,5 +5,76 @@ env["ENV"]["PKG_CONFIG_PATH"] = os.environ.get("PKG_CONFIG_PATH")
 #env.ParseConfig( 'pkg-config opencv pcl_common-1.7 pcl_io-1.7 pcl_visualization-1.7 --libs --cflags' )
 #env.Append(CCFLAGS = ['-g','-Wall', '-std=c++11'])
 # OpenNI doesn't have a pkg-config file
-env.ParseConfig( 'pkg-config opencv pcl_common-1.7 --libs --cflags' )
-env.Append(CCFLAGS = ['-g','-Wall', '-std=c++11', '-lOpenNI', '-lpcl_io-1.7', '-lpcl_visualization-1.7'])
+env.ParseConfig( 'pkg-config opencv pcl_common-1.7 eigen3 --libs --cflags' )
+env.Append(CPPPATH= [
+    '/usr/include/vtk-5.10/',
+    '/usr/include/boost/',
+])
+env.Append(LIBPATH = [
+    '/usr/lib/vtk-5.10/',
+    '/usr/local/lib/',
+])
+env.Append(LIBS=[
+    'boost_system',
+    'boost_filesystem',
+    'OpenNI',
+    'pcl_common',
+    'pcl_io',
+    'pcl_visualization',
+    'vtkCommon',
+    'vtkWidgets',
+    'vtkRendering',
+    'vtkImaging',
+    'vtkGraphics',
+    'vtkFiltering',
+    'vtkGenericFiltering',
+    'vtkHybrid',
+    'vtkIO',
+    'vtkftgl',
+    'vtkVolumeRendering',
+    'vtkNetCDF',
+    'vtkDICOMParser',
+    'vtkCommon',
+    'vtkexoIIc',
+    #'vtkexpat',
+    #'vtkfreetype',
+    #'vtkjpeg',
+    #'vtkpng',
+    'vtksys',
+    #'vtktiff',
+    #'vtkzlib',
+])
+env.Append(CCFLAGS = [
+    '-g',
+    '-Wall',
+    '-Wno-deprecated',
+    '-std=c++11',
+#    '-lOpenNI',
+#    '-lpcl_io-1.7',
+#    '-lpcl_visualization-1.7',
+#    '-lvtkCommon',
+#    '-lvtkWidgets',
+#    '-lvtkRendering',
+#    '-lvtkImaging',
+#    '-lvtkGraphics',
+#    '-lvtkFiltering',
+#    '-lvtkGenericFiltering',
+#    '-lvtkHybrid',
+#    '-lvtkIO',
+#    '-lvtkftgl',
+#    '-lvtkVolumeRendering',
+#    '-lvtkNetCDF',
+#    '-lvtkDICOMParser',
+#    '-lvtkCommon',
+#    '-lvtkexoIIc',
+#    '-lvtkexpat',
+#    '-lvtkfreetype',
+#    '-lvtkjpeg',
+#    '-lvtkpng',
+#    '-lvtksys',
+#    '-lvtktiff',
+#    '-lvtkzlib',
+#    '-lboost_system',
+#    '-lboost_filesystem',
+#    '-lbost_qwert',
+    ])

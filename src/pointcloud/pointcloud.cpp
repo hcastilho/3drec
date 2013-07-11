@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include <memory>
 #include <thread>
+#include <mutex>
 
 #include <opencv2/core/core.hpp>
-//#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/contrib/contrib.hpp>
@@ -15,30 +16,38 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
+
+#define ESC_KEY 27
+#define g_KEY 103
+
 using namespace cv;
 using namespace std;
 
 
 struct StereoPair {
     Mat view[2];
-}
+};
 StereoPair stereo_pair;
 StereoBM sbm;
+Mat Q;
+cv::Mat m_map[2][2];
 std::mutex data_mutex;
-std::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+std::shared_ptr<pcl::visualization::PCLVisualizer> viewer (
+        new pcl::visualization::PCLVisualizer ("3D Viewer"));
 
 void create_point_cloud() {
     Mat disp;
-    data_mutex.lock()
+    data_mutex.lock();
     sbm(stereo_pair.view[0], stereo_pair.view[1], disp);
-    Mat img_rgb = stereo_pair.view[0].clone()
-    data_mutex.unlock()
+    Mat img_rgb = stereo_pair.view[0].clone();
+    data_mutex.unlock();
 
     Mat xyz;
     reprojectImageTo3D(disp, xyz, Q, true);
 
     //Create point cloud and fill it
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (
+            new pcl::PointCloud<pcl::PointXYZRGB>);
     double px, py, pz;
     uchar pr, pg, pb;
     int i,j;
@@ -74,20 +83,23 @@ void create_point_cloud() {
     point_cloud_ptr->height = 1;
 
     // Show point cloud in visualizer
-    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
-    viewer->addPointCloud<pcl::PointXYZRGB> (cloud, rgb, "reconstruction");
+    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(point_cloud_ptr);
+    viewer->addPointCloud<pcl::PointXYZRGB> (point_cloud_ptr, rgb, "reconstruction");
 
-    //pcl::io::savePCDFileASCII ("test_pcd.pcd", cloud);
-    pcl::io::savePCDFileBinary("test_pcd.pcd", cloud);
+    //pcl::io::savePCDFileASCII ("test_pcd.pcd", point_cloud_ptr);
+    pcl::io::savePCDFileBinary("test_pcd.pcd", *point_cloud_ptr);
 }
 
+volatile bool threadRun = false;
 void frame_graber() {
     threadRun = true;
 
-    int i, k;
+    int k;
     char key;
     int cameraId[2] = {1,0};
     VideoCapture inputCapture[2];
+    Mat view[2];
+
     for (k = 0; k < 2; ++k)
     {
         inputCapture[k].open(cameraId[k]);
@@ -108,19 +120,20 @@ void frame_graber() {
         for( k = 0; k < 2; k++ )
         {
             Mat aux;
-            inputCapture[k].retrieve(data.view[k]);
-            remap(data.view[k], aux, data.map[k][0], data.map[k][1], INTER_LINEAR);
-            data.view[k]=aux;
+            inputCapture[k].retrieve(view[k]);
+            remap(view[k], aux, m_map[k][0], m_map[k][1], INTER_LINEAR);
+            view[k]=aux;
         }
+        imshow("view", view[0]);
 
         key = (char)waitKey(50);
         if( key  == ESC_KEY )
             break;
         if( key  == g_KEY ) {
-            data_mutex.lock()
+            data_mutex.lock();
             stereo_pair.view[0] = view[0].clone();
             stereo_pair.view[1] = view[1].clone();
-            data_mutex.lock()
+            data_mutex.lock();
             std::thread point_cloud_thread(create_point_cloud);
         }
     }
@@ -128,16 +141,11 @@ void frame_graber() {
 
 int main(int argc, char* argv[])
 {
-    int cameraId[2] = {1,0};
+    const string intrinsics_file = argc > 1 ? argv[1] : "intrinsics.yml";
+    const string extrinsics_file = argc > 2 ? argv[2] : "extrinsics.yml";
+    const string bm_file = argc > 3 ? argv[3] : "bm_settings.yml";
 
-    const char ESC_KEY = 27;
-    const char g_KEY = 103;
-
-    FileStorage fs("matching_bm_settings.yml", CV_STORAGE_READ);
-    string intrinsicsFile, extrinsicsFile;
-    fs["intrinsicsFile"] >> intrinsicsFile;
-    fs["extrinsicsFile"] >> extrinsicsFile;
-
+    FileStorage fs(bm_file, CV_STORAGE_READ);
     StereoBM bm;
     fs["preFilterCap"] >> bm.state->preFilterCap;
     fs["SADWindowSize"] >> bm.state->SADWindowSize;
@@ -150,7 +158,7 @@ int main(int argc, char* argv[])
     fs["disp12MaxDiff"] >> bm.state->disp12MaxDiff;
 
 
-    fs.open(intrinsicsFile, CV_STORAGE_READ);
+    fs.open(intrinsics_file, CV_STORAGE_READ);
     if(!fs.isOpened())
     {
         cout << "Failed to open intrinsics file ";
@@ -167,14 +175,14 @@ int main(int argc, char* argv[])
     fs["imageSize"] >> imgsize;
     imageSize = Size(imgsize[0], imgsize[1]);
 
-    fs.open(extrinsicsFile, CV_STORAGE_READ);
+    fs.open(extrinsics_file, CV_STORAGE_READ);
     if(!fs.isOpened())
     {
         cout << "Failed to open extrinsics file ";
         return -1;
     }
 
-    Mat R, T, R1, P1, R2, P2, Q;
+    Mat R, T, R1, P1, R2, P2; //, Q;
     fs["R"] >> R;
     fs["T"] >> T;
     //fs["R1"] >> R1;
@@ -188,14 +196,12 @@ int main(int argc, char* argv[])
     bm.state->roi1 = roi1;
     bm.state->roi2 = roi2;
 
-    //Mat map11, map12, map21, map22;
-    Mat map[2][2];
-    initUndistortRectifyMap(M1, D1, R1, P1, imageSize, CV_16SC2, map[0][0], map[0][1]);
-    initUndistortRectifyMap(M2, D2, R2, P2, imageSize, CV_16SC2, map[1][0], map[1][1]);
+    initUndistortRectifyMap(M1, D1, R1, P1, imageSize, CV_16SC2, m_map[0][0], m_map[0][1]);
+    initUndistortRectifyMap(M2, D2, R2, P2, imageSize, CV_16SC2, m_map[1][0], m_map[1][1]);
 
-    viewer->setBackgroundColor (0, 0, 0);
-    viewer->addCoordinateSystem ( 1.0 );
-    viewer->initCameraParameters ();
+    //viewer->setBackgroundColor (0, 0, 0);
+    //viewer->addCoordinateSystem ( 1.0 );
+    //viewer->initCameraParameters ();
 
     std::thread frame_graber_thread(frame_graber);
     frame_graber_thread.join();

@@ -1,3 +1,9 @@
+# Notes #
+resources/jayrambhia_bm_settings.yml is giving nice results
+# Camera #
+[guvcview](http://guvcview.sourceforge.net/)
+[Understanding linux standard USB webcam drivers](http://stackoverflow.com/questions/15615494/understanding-linux-standard-usb-webcam-drivers)
+[Linux UVC driver and tools](http://www.ideasonboard.org/uvc/)
 
 # Libs #
 [Pi Camera](http://www.element14.com/community/roadTests/1162?CMP=SOM-ROADT-RASPI-PICAMERA-ENROLL-FB)

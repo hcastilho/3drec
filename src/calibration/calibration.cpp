@@ -13,6 +13,9 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
+    const string intrinsics_file = argc > 1 ? argv[1] : "intrinsics.yml";
+    const string extrinsics_file = argc > 2 ? argv[2] : "extrinsics.yml";
+
     int delay = 2000;
     bool blinkOutput = false;
     clock_t prevTimestamp = 0;
@@ -188,7 +191,7 @@ int main(int argc, char* argv[])
     cout << "average reprojection err = " <<  err/npoints << endl;
 
     // save intrinsic parameters
-    FileStorage fs("intrinsics.yml", CV_STORAGE_WRITE);
+    FileStorage fs(intrinsics_file, CV_STORAGE_WRITE);
     if( fs.isOpened() )
     {
         fs << "M1" << cameraMatrix[0] << "D1" << distCoeffs[0] <<
@@ -207,7 +210,7 @@ int main(int argc, char* argv[])
                   imageSize, R, T, R1, R2, P1, P2, Q,
                   CALIB_ZERO_DISPARITY, 1, imageSize, &validRoi[0], &validRoi[1]);
 
-    fs.open("extrinsics.yml", CV_STORAGE_WRITE);
+    fs.open(extrinsics_file, CV_STORAGE_WRITE);
     if( fs.isOpened() )
     {
         fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;

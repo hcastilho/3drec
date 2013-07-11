@@ -216,12 +216,54 @@ void on_adjustment9_value_changed(Glib::RefPtr<Gtk::Adjustment> adjustment)
     }
 }
 
+bool on_key_released(GdkEventKey* event) {
+  //GDK_MOD1_MASK -> the 'alt' key(mask)
+  //GDK_KEY_1 -> the '1' key
+  //GDK_KEY_2 -> the '2' key
+  cout << "HERE" << endl;
+
+  //select the first radio button, when we press alt + 1
+  if(event->keyval == GDK_KEY_E)
+  {
+    FileStorage fs("bm_settings.yml", CV_STORAGE_WRITE);
+    {
+    Glib::Threads::Mutex::Lock lock (theMutex);
+    if( fs.isOpened() ) {
+        fs << "SADWindowSize" << data.sbm.state->SADWindowSize <<
+            "numberOfDisparities" << data.sbm.state->numberOfDisparities <<
+            "preFilterSize" << data.sbm.state->preFilterSize <<
+            "preFilterCap" << data.sbm.state->preFilterCap <<
+            "minDisparity" << data.sbm.state->minDisparity <<
+            "textureThreshold" << data.sbm.state->textureThreshold <<
+            "uniquenessRatio" << data.sbm.state->uniquenessRatio <<
+            "speckleWindowSize" << data.sbm.state->speckleWindowSize <<
+            "speckleRange" << data.sbm.state->speckleRange <<
+            "disp12MaxDiff" << data.sbm.state->disp12MaxDiff;
+    }
+    fs.release();
+    }
+    //returning true, cancels the propagation of the event
+    return true;
+  }
+  //else if(event->keyval == GDK_KEY_Escape)
+  //{
+  //  //close the window, when the 'esc' key is pressed
+  //  hide();
+  //  return true;
+  //}
+
+  //if the event has not been handled, call the base class
+  //return Gtk::Window::on_key_press_event(event);
+  //return data.main_window->on_key_press_event(event);
+  return true;
+}
+
 
 void thread_worker() {
     threadRun = true;
 
-    int i, k;
-    char key;
+    int k;
+    //char key;
     int cameraId[2] = {1,0};
     VideoCapture inputCapture[2];
     {
@@ -235,7 +277,6 @@ void thread_worker() {
         }
     }
     }
-
     while (threadRun) {
         // TODO skip processing on some frames
         Glib::usleep(50000);
@@ -306,19 +347,36 @@ void dispatch_worker() {
 
 int main(int argc, char **argv )
 {
+    const string intrinsics_file = argc > 1 ? argv[1] : "intrinsics.yml";
+    const string extrinsics_file = argc > 2 ? argv[2] : "extrinsics.yml";
 
     //TODO: Get all the BM Default parameters from the GUI definition
-    data.sbm.state->preFilterSize        = 5;
-    data.sbm.state->preFilterCap         = 1;
-    data.sbm.state->SADWindowSize        = 5;
-    data.sbm.state->minDisparity         = 0;
-    data.sbm.state->numberOfDisparities  = 64;
-    data.sbm.state->textureThreshold     = 0;
-    data.sbm.state->uniquenessRatio  = 0;
-    data.sbm.state->speckleWindowSize    = 0;
-    data.sbm.state->speckleRange     = 0;
+    FileStorage settings("bm_settings.yml", CV_STORAGE_READ);
+    if( settings.isOpened() ) {
+        settings["preFilterSize"] >> data.sbm.state->preFilterSize;
+        settings["preFilterCap"] >> data.sbm.state->preFilterCap;
+        settings["SADWindowSize"] >> data.sbm.state->SADWindowSize;
+        settings["minDisparity"] >> data.sbm.state->minDisparity;
+        settings["numberOfDisparities"] >> data.sbm.state->numberOfDisparities;
+        settings["textureThreshold"] >> data.sbm.state->textureThreshold;
+        settings["uniquenessRatio"] >> data.sbm.state->uniquenessRatio;
+        settings["speckleWindowSize"] >> data.sbm.state->speckleWindowSize;
+        settings["speckleRange"] >> data.sbm.state->speckleRange;
+        settings.release();
+    }
+    else {
+        data.sbm.state->preFilterSize        = 5;
+        data.sbm.state->preFilterCap         = 1;
+        data.sbm.state->SADWindowSize        = 5;
+        data.sbm.state->minDisparity         = 0;
+        data.sbm.state->numberOfDisparities  = 64;
+        data.sbm.state->textureThreshold     = 0;
+        data.sbm.state->uniquenessRatio  = 0;
+        data.sbm.state->speckleWindowSize    = 0;
+        data.sbm.state->speckleRange     = 0;
+    }
 
-    FileStorage fs("intrinsics.yml", CV_STORAGE_READ);
+    FileStorage fs(intrinsics_file, CV_STORAGE_READ);
     if(!fs.isOpened())
     {
         cout << "Failed to open intrinsics file ";
@@ -335,7 +393,7 @@ int main(int argc, char **argv )
     fs["imageSize"] >> imgsize;
     imageSize = Size(imgsize[0], imgsize[1]);
 
-    fs.open("extrinsics.yml", CV_STORAGE_READ);
+    fs.open(extrinsics_file, CV_STORAGE_READ);
     if(!fs.isOpened())
     {
         cout << "Failed to open extrinsics file ";
@@ -366,6 +424,11 @@ int main(int argc, char **argv )
     builder->get_widget("image_disparity", data.image_depth);
 
     ///* Connect signals */
+    data.main_window->add_events(Gdk::KEY_PRESS_MASK);
+    data.main_window->signal_key_release_event().connect(
+                sigc::ptr_fun(&on_key_released)
+            );
+
     Glib::RefPtr<Gtk::Adjustment> adjustment1;
     adjustment1 = Glib::RefPtr<Gtk::Adjustment>::cast_dynamic(builder->get_object("adjustment1"));
     adjustment1->signal_value_changed().connect(
@@ -445,6 +508,7 @@ int main(int argc, char **argv )
     theThread = Glib::Threads::Thread::create( sigc::ptr_fun(&thread_worker));
     //myThread = std::thread(&run);
     kit.run(*data.main_window);
+    theThread->join();
 
     //return( 0 );
 }
